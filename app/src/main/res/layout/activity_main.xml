@@ -31,7 +31,7 @@
             android:layout_height="80dp"
             android:layout_gravity="bottom"
             android:background="@drawable/card_background"
-            android:backgroundTint="#F8FFFFFF"
+            android:backgroundTint="#FFFFFFFF"
             android:elevation="8dp" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -41,10 +41,10 @@
             android:layout_gravity="bottom"
             android:background="@android:color/transparent"
             android:elevation="12dp"
-            app:itemIconSize="24dp"
+            app:itemIconSize="32dp"
             app:itemIconTint="@color/nav_item_color"
             app:itemTextColor="@color/nav_item_color"
-            app:labelVisibilityMode="labeled"
+            app:labelVisibilityMode="unlabeled"
             app:menu="@menu/bottom_nav_menu" />
 
         <!-- Central FAB positioned relative to the nav bar -->
