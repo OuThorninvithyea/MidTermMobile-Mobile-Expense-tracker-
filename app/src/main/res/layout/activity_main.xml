@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,183 +8,58 @@
     android:background="@color/bg_light"
     tools:context=".MainActivity">
 
-    <androidx.core.widget.NestedScrollView
+    <!-- Fragment Container -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Navigation Container -->
+    <FrameLayout
+        android:id="@+id/bottomNavContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="32dp">
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout
+        <!-- Custom Background with rounded top corners for glass effect -->
+        <View
             android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/card_background"
+            android:backgroundTint="#F8FFFFFF"
+            android:elevation="8dp" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_gravity="bottom"
+            android:background="@android:color/transparent"
+            android:elevation="12dp"
+            app:itemIconSize="24dp"
+            app:itemIconTint="@color/nav_item_color"
+            app:itemTextColor="@color/nav_item_color"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_nav_menu" />
+
+        <!-- Central FAB positioned relative to the nav bar -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAdd"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="0dp"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="@color/brand_blue"
+            app:elevation="16dp"
+            app:fabSize="normal"
+            app:tint="@color/white" />
 
-            <!-- Header -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
+    </FrameLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Expenses"
-                        android:textColor="@color/black"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="January 2026"
-                        android:textColor="@color/category_others"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:padding="8dp"
-                    android:src="@android:drawable/ic_menu_sort_by_size" />
-            </RelativeLayout>
-
-            <!-- Summary Card -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/card_gradient"
-                android:elevation="8dp"
-                android:orientation="vertical"
-                android:padding="24dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Spent"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/totalSpent"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="$2,450.80"
-                    android:textColor="@color/white"
-                    android:textSize="36sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/rounded_card"
-                    android:backgroundTint="#33FFFFFF"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="+12% vs last mo"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- Weekly Overview -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="16dp"
-                android:text="Weekly Overview"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:background="@drawable/rounded_card"
-                android:gravity="bottom|center_horizontal"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <!-- Simple Bar Chart Representation -->
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="60dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="80dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="40dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="100dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="70dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="90dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="50dp"
-                    android:layout_marginHorizontal="6dp"
-                    android:background="@color/brand_blue_light" />
-
-            </LinearLayout>
-
-            <!-- Recent Spending -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="16dp"
-                android:text="Recent Spending"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/item_expense" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="32dp"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/brand_blue"
-        app:tint="@color/white"
-        app:fabSize="normal"
-        app:elevation="12dp" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
