@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Brand Colors -->
+    <color name="brand_blue">#3b82f6</color>
+    <color name="brand_blue_light">#60a5fa</color>
+    <color name="brand_blue_dark">#2563eb</color>
+
+    <!-- Backgrounds -->
+    <color name="bg_light">#f3f4f6</color>
+    <color name="bg_dark">#000000</color>
+    <color name="bg_card_dark">#0a0a0a</color>
+
+    <!-- Categories -->
+    <color name="category_food">#f59e0b</color>
+    <color name="category_transport">#10b981</color>
+    <color name="category_shopping">#8b5cf6</color>
+    <color name="category_bills">#ef4444</color>
+    <color name="category_entertainment">#d946ef</color>
+    <color name="category_others">#6b7280</color>
+</resources>
