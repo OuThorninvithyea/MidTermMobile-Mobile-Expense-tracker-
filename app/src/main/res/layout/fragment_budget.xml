@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:background="@color/bg_main"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:text="Budget Limits"
-        android:textColor="@color/black"
+        android:textColor="@color/text_primary"
         android:textSize="32sp"
         android:textStyle="bold" />
 
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:text="MANAGE YOUR SPENDING"
-        android:textColor="#94a3b8"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         android:textStyle="bold" />
 
@@ -52,7 +52,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:text="$320 / $500"
-                    android:textColor="#94a3b8"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </RelativeLayout>
             <ProgressBar

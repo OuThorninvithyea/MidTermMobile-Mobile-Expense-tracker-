@@ -63,6 +63,11 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Only reload if we're coming back from adding an expense
+        // The fragment is now cached, so we don't need to reload on every resume
+    }
+
+    public void refreshData() {
         loadExpenses();
     }
 

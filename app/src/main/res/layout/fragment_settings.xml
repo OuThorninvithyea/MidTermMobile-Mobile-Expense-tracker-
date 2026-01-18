@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:background="@color/bg_main"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:text="Settings"
-        android:textColor="@color/black"
+        android:textColor="@color/text_primary"
         android:textSize="32sp"
         android:textStyle="bold" />
 
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:text="PREFERENCES &amp; DATA"
-        android:textColor="#94a3b8"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         android:textStyle="bold" />
 
@@ -37,14 +37,29 @@
             android:padding="8dp"
             android:background="@drawable/card_background">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:padding="16dp"
-                android:text="Dark Appearance"
-                android:textStyle="bold" />
+                android:gravity="center_vertical">
 
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F1F5F9" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Dark Appearance"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="16sp" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchDarkMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -53,7 +68,7 @@
                 android:text="Export CSV"
                 android:textStyle="bold" />
 
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F1F5F9" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -71,7 +86,7 @@
         android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="Expense Tracker v1.0"
-        android:textColor="#94a3b8"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         android:textStyle="bold" />
 

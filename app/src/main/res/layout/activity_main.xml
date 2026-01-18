@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:background="@color/bg_main"
     tools:context=".MainActivity">
 
     <!-- Fragment Container -->
@@ -25,29 +25,26 @@
         android:layout_height="100dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Custom Background with rounded top corners for glass effect -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_gravity="bottom"
-            android:background="@drawable/card_background"
-            android:backgroundTint="#FFFFFFFF"
-            android:elevation="8dp" />
+        <!-- Bottom Navigation with Background applied directly -->
+
+        <!-- Central FAB positioned relative to the nav bar -->
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="101dp"
             android:layout_gravity="bottom"
-            android:background="@android:color/transparent"
-            android:elevation="12dp"
-            app:itemIconSize="32dp"
+            android:background="@drawable/card_background"
+            android:backgroundTint="@color/bg_card"
+            android:elevation="8dp"
+            app:itemActiveIndicatorStyle="@null"
+            app:itemIconSize="28dp"
             app:itemIconTint="@color/nav_item_color"
+            app:itemRippleColor="@null"
             app:itemTextColor="@color/nav_item_color"
-            app:labelVisibilityMode="unlabeled"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/bottom_nav_menu" />
 
-        <!-- Central FAB positioned relative to the nav bar -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAdd"
             android:layout_width="wrap_content"

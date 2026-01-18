@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FFFFFFFF</color>
+    <color name="white">#FF000000</color>
+
+    <!-- Semantic Colors -->
+    <color name="text_primary">#f8fafc</color>
+    <color name="text_secondary">#94a3b8</color>
+    <color name="bg_main">#0f172a</color>
+    <color name="bg_card">#1e293b</color>
+    <color name="divider">#334155</color>
+
+    <!-- Brand Colors (adjusting for dark mode if needed) -->
+    <color name="brand_blue">#60a5fa</color>
+
+    <!-- Backgrounds (legacy) -->
+    <color name="bg_light">#0f172a</color>
+    <color name="bg_card_dark">#1e293b</color>
+</resources>
