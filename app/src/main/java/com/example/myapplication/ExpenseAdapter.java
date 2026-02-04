@@ -53,7 +53,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     class ExpenseViewHolder extends RecyclerView.ViewHolder {
         private TextView tvCategory, tvNote, tvAmount, tvCategoryIcon, tvDate;
-        private ImageView ivExpenseImage;
+        private ImageView ivExpenseImage, ivCategoryIconImage;
         private android.widget.ImageButton btnMenu;
 
         public ExpenseViewHolder(@NonNull View itemView) {
@@ -64,6 +64,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
             tvCategoryIcon = itemView.findViewById(R.id.tvCategoryIcon);
             tvDate = itemView.findViewById(R.id.tvDate);
             ivExpenseImage = itemView.findViewById(R.id.ivExpenseImage);
+            ivCategoryIconImage = itemView.findViewById(R.id.ivCategoryIconImage);
             btnMenu = itemView.findViewById(R.id.btnMenu);
         }
 
@@ -72,11 +73,25 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
             tvNote.setText(expense.note);
             tvAmount.setText(String.format(Locale.getDefault(), "-$%.2f", expense.amount));
             
-            // Bind image
+            // Handle Image and Icon display
+            // If an image is present, show it in the icon slot (ivCategoryIconImage) and hide the text icon.
+            // Also hide the large ivExpenseImage as requested.
             if (expense.imageUri != null && !expense.imageUri.isEmpty()) {
-                ivExpenseImage.setVisibility(View.VISIBLE);
-                ivExpenseImage.setImageURI(Uri.parse(expense.imageUri));
+                ivCategoryIconImage.setVisibility(View.VISIBLE);
+                ivCategoryIconImage.setImageURI(Uri.parse(expense.imageUri));
+                tvCategoryIcon.setVisibility(View.GONE);
+                
+                // Hide the big image preview
+                ivExpenseImage.setVisibility(View.GONE);
             } else {
+                ivCategoryIconImage.setVisibility(View.GONE);
+                tvCategoryIcon.setVisibility(View.VISIBLE);
+                
+                // Set category icon
+                String icon = getCategoryIcon(expense.category);
+                tvCategoryIcon.setText(icon);
+                
+                // Ensure big image is hidden
                 ivExpenseImage.setVisibility(View.GONE);
             }
             
@@ -86,10 +101,6 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
             } else {
                 tvDate.setText("Today");
             }
-            
-            // Set category icon
-            String icon = getCategoryIcon(expense.category);
-            tvCategoryIcon.setText(icon);
 
             // Setup 3-dot menu button
             btnMenu.setOnClickListener(v -> {
