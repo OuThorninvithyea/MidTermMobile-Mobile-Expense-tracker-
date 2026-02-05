@@ -192,6 +192,13 @@ public class AddExpenseFragment extends Fragment {
                 }
             });
 
+            if (!category.equals("Others")) {
+                card.setOnLongClickListener(v -> {
+                    showDeleteCategoryDialog(category);
+                    return true;
+                });
+            }
+
             gridCategories.addView(card);
         }
 
@@ -433,6 +440,22 @@ public class AddExpenseFragment extends Fragment {
         } else {
             Toast.makeText(requireContext(), "Failed to save expense", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showDeleteCategoryDialog(String category) {
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Delete Category")
+            .setMessage("Are you sure you want to delete '" + category + "'?")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                if (dataManager.deleteCategory(category)) {
+                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
+                    loadCategories(); // This will also reset selectedCategory if needed
+                } else {
+                    Toast.makeText(requireContext(), "Failed to delete category", Toast.LENGTH_SHORT).show();
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     private void saveExpense() {

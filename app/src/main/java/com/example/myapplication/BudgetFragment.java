@@ -117,8 +117,18 @@ public class BudgetFragment extends Fragment {
         com.google.android.material.textfield.TextInputLayout tilCustomCategory = dialogView.findViewById(R.id.tilCustomCategoryBudget);
         GridLayout gridCategories = dialogView.findViewById(R.id.gridBudgetCategories);
         
-        String[] categories = {"Food", "Transport", "Shopping", "Bills", "Entertainment", "Others"};
-        String[] categoryIcons = {"🍔", "🚗", "🛍️", "📜", "🍿", "✨"};
+        List<String> categoryList = dataManager.getCategories();
+        String[] categories = categoryList.toArray(new String[0]);
+        
+        // Setup icon map with defaults
+        Map<String, String> iconMap = new HashMap<>();
+        iconMap.put("Food", "🍔");
+        iconMap.put("Transport", "🚗");
+        iconMap.put("Shopping", "🛍️");
+        iconMap.put("Bills", "📜");
+        iconMap.put("Entertainment", "🍿");
+        iconMap.put("Others", "✨");
+        
         String[] selectedCategory = {existingBudget != null ? existingBudget.category : categories[0]};
         String[] customCategoryName = {""};
         TextView[] othersCategoryLabel = {null};
@@ -141,7 +151,9 @@ public class BudgetFragment extends Fragment {
             card.setCardElevation(2);
 
             TextView tvIcon = new TextView(requireContext());
-            tvIcon.setText(categoryIcons[i]);
+            // Use default icon for unknown categories
+            String icon = iconMap.getOrDefault(categories[i], "🏷️");
+            tvIcon.setText(icon);
             tvIcon.setTextSize(24);
             tvIcon.setPadding(24, 24, 24, 8);
             tvIcon.setGravity(android.view.Gravity.CENTER);
@@ -189,7 +201,7 @@ public class BudgetFragment extends Fragment {
             gridCategories.addView(card);
         }
         
-        // Check if existing budget is a custom category (not in predefined list)
+        // Check if existing budget is in the list
         if (existingBudget != null) {
             boolean isPredefinedCategory = false;
             for (String cat : categories) {
@@ -199,7 +211,11 @@ public class BudgetFragment extends Fragment {
                 }
             }
             if (!isPredefinedCategory) {
-                // It's a custom category
+                // If the category was deleted or is somehow missing, treat it as custom via "Others" logic
+                // Or just add it momentarily to the end of the list? 
+                // For simplicity, we'll try to map it to "Others" logic if "Others" exists.
+                // But ideally budgets for deleted categories should probably be cleaned up or shown as legacy.
+                // Current implementation: Treat as Custom/Others
                 selectedCategory[0] = "Others";
                 customCategoryName[0] = existingBudget.category;
                 tilCustomCategory.setVisibility(View.VISIBLE);

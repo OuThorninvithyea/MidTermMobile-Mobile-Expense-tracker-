@@ -118,10 +118,12 @@ public class SettingsFragment extends Fragment {
         // Apply the new mode
         AppCompatDelegate.setDefaultNightMode(newMode);
         
-        // Recreate activity to apply theme changes immediately
-        if (getActivity() != null) {
-            getActivity().recreate();
-        }
+        // Recreate activity is NOT needed here because AppCompatDelegate handles it 
+        // automatically when the mode changes, as 'uiMode' is not in configChanges.
+        // Calling recreate() manually causes a double-destruction race condition => glitches.
+        // if (getActivity() != null) {
+        //    getActivity().recreate();
+        // }
     }
     
     private void showEditProfileDialog() {

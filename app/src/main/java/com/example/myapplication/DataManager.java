@@ -337,6 +337,20 @@ public class DataManager {
         
         return saveCategories(userId, categories);
     }
+
+    public boolean deleteCategory(String category) {
+        int userId = prefs.getInt("userId", -1);
+        if (userId <= 0) return false;
+        
+        // Prevent deleting "Others" category as it's required for custom input
+        if (category.equals("Others")) return false;
+
+        List<String> categories = getCategories();
+        if (!categories.contains(category)) return false;
+        
+        categories.remove(category);
+        return saveCategories(userId, categories);
+    }
     
     private boolean saveCategories(int userId, List<String> categories) {
         JSONArray jsonArray = new JSONArray();
