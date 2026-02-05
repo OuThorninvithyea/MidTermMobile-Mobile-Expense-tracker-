@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
  * It extends SQLiteOpenHelper to handle database lifecycle events (create, upgrade, open).
  *
  * This class defines the database schema including tables for Users, Expenses, and Budgets.
+ * It also encapsulates low-level SQL operations and raw cursor handling.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "expense_tracker.db";
@@ -55,6 +56,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Called when the database is created for the first time.
      * This is where the creation of tables and the initial population of the tables should happen.
+     * 
+     * We enable foreign keys to ensure data integrity (e.g., expenses must belong to a valid user).
      *
      * @param db The database.
      */
@@ -112,6 +115,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("PRAGMA foreign_keys = ON");
     }
 
+    /**
+     * Called when the database needs to be upgraded.
+     * This happens when the DATABASE_VERSION is incremented.
+     * 
+     * Current strategy: Drop all existing tables and recreate them.
+     * logic: This is a destructive upgrade (data loss). In a production app,
+     * you would typically write ALTER TABLE statements to preserve data.
+     *
+     * @param db The database.
+     * @param oldVersion The old database version.
+     * @param newVersion The new database version.
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d("DatabaseHelper", "Upgrading database from version " + oldVersion + " to " + newVersion);
@@ -182,6 +197,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Hashes a password using SHA-256 for secure storage.
      * Never store plain text passwords!
+     * 
+     * SHA-256 is a one-way cryptographic hash function.
      *
      * @param password The plain text password
      * @return The SHA-256 hash string, or null if error
@@ -558,6 +575,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Inserts a new expense into the database.
+     * Uses ContentValues to safely bind parameters and avoid SQL injection.
      *
      * @param userId   The ID of the user owning the expense
      * @param category Expense category
@@ -582,6 +600,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    /**
+     * Retrieves all expenses for a user.
+     * 
+     * IMPORTANT: This method manually constructs a JSON string result.
+     * Ideally, we would return a Cursor or a List of objects, but this approach
+     * demonstrates how to format raw data for manual serialization at the database layer.
+     * 
+     * @param userId The user ID
+     * @return A JSON string representing the list of expenses
+     */
     public String getExpenses(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_EXPENSES,

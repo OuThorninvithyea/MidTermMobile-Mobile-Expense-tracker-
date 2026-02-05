@@ -21,6 +21,12 @@ public class DataManager {
     private SharedPreferences prefs;
     private Context context;
 
+    /**
+     * Private constructor to enforce Singleton pattern.
+     * Initializes the database helper and shared preferences.
+     * 
+     * @param context Application context
+     */
     private DataManager(Context context) {
         this.context = context;
         this.prefs = context.getSharedPreferences("ExpenseTracker", Context.MODE_PRIVATE);
@@ -62,8 +68,16 @@ public class DataManager {
      * @param context Application context needed for database and prefs initialization
      * @return The single instance of DataManager
      */
+    /**
+     * Public method to get the singleton instance of DataManager.
+     * Ensures only one instance of DataManager is created (Singleton Pattern).
+     * 
+     * @param context Application context needed for database and prefs initialization
+     * @return The single instance of DataManager
+     */
     public static synchronized DataManager getInstance(Context context) {
         if (instance == null) {
+            // Use application context to avoid memory leaks if activity context is passed
             instance = new DataManager(context.getApplicationContext());
         }
         return instance;
@@ -93,8 +107,18 @@ public class DataManager {
         return new LoginResult(false, null, "Invalid username or password");
     }
 
+    /**
+     * Register a new user.
+     * 
+     * @param username Desired username
+     * @param password Password (will be hashed)
+     * @param pet Security answer for password recovery
+     * @return SignupResult containing success status and user data or error message
+     */
     public SignupResult signup(String username, String password, String pet) {
         android.util.Log.d("DataManager", "Signup attempt for: " + username);
+        
+        // Validation checks
         if (username == null || username.trim().isEmpty()) {
             android.util.Log.e("DataManager", "Signup failed: Username is required");
             return new SignupResult(false, null, "Username is required");
@@ -209,6 +233,9 @@ public class DataManager {
     /**
      * Retrieves all expenses for the current user.
      * Parses the JSON string returned by DatabaseHelper into a List of Expense objects.
+     * 
+     * The usage of JSON as a data transfer format here decouples the DataManager from
+     * the raw database cursor, allowing for easier data manipulation and potential API integration later.
      *
      * @return List of Expense objects, or empty list if none found or error
      */
@@ -367,6 +394,12 @@ public class DataManager {
     // Check if adding an expense would exceed the budget
     /**
      * Checks if adding a new expense amount would exceed the set budget for that category.
+     * 
+     * Logic:
+     * 1. Find the budget limit for the specific category.
+     * 2. Calculate current total spending in that category.
+     * 3. Add the new amount to the current total.
+     * 4. Compare with the limit.
      *
      * @param category The category to check
      * @param amount   The amount of the new expense

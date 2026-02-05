@@ -24,13 +24,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * BudgetFragment
+ * 
+ * This fragment manages the user interface for the Budget feature.
+ * It allows users to:
+ * 1. View their list of budgets.
+ * 2. See visual progress (progress bars) for each budget.
+ * 3. Add new budgets for specific categories.
+ * 4. Edit or delete existing budgets.
+ * 
+ * It acts as the "View" in the MVC/MVVM pattern, displaying data from DataManager.
+ */
 public class BudgetFragment extends Fragment {
-    private RecyclerView rvBudgets;
-    private MaterialButton btnAddBudget;
-    private TextView tvEmptyState;
-    private DataManager dataManager;
-    private BudgetAdapter adapter;
-    private List<BudgetAdapter.BudgetItem> budgetItems;
+    // UI Components
+    private RecyclerView rvBudgets; // List view for budget items
+    private MaterialButton btnAddBudget; // Floating action button to add new budget
+    private TextView tvEmptyState; // Text shown when no budgets exist
+    
+    // Data & Logic
+    private DataManager dataManager; // Repository for accessing database
+    private BudgetAdapter adapter; // Adapter to bind data to RecyclerView
+    private List<BudgetAdapter.BudgetItem> budgetItems; // List of data objects to display
 
     @Nullable
     @Override
@@ -38,18 +53,34 @@ public class BudgetFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_budget, container, false);
     }
 
+    /**
+     * Called immediately after the view is created.
+     * Use this for:
+     * 1. Initializing UI references (findViewById).
+     * 2. Setting up the RecyclerView (LayoutManager and Adapter).
+     * 3. Setting up button click listeners.
+     * 4. Loading initial data.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Get singleton instance of DataManager
         dataManager = DataManager.getInstance(requireContext());
+        
+        // Initialize UI components
         rvBudgets = view.findViewById(R.id.rvBudgets);
         btnAddBudget = view.findViewById(R.id.btnAddBudget);
         tvEmptyState = view.findViewById(R.id.tvEmptyState);
 
+        // Setup RecyclerView
+        // LinearLayoutManager arranges items in a vertical list
         rvBudgets.setLayoutManager(new LinearLayoutManager(requireContext()));
+        
+        // Initialize the list and adapter
         budgetItems = new ArrayList<>();
         adapter = new BudgetAdapter(budgetItems, new BudgetAdapter.OnBudgetClickListener() {
+            // Implement interface callbacks for item interactions
             @Override
             public void onEditClick(DataManager.Budget budget) {
                 showEditBudgetDialog(budget);
@@ -62,32 +93,46 @@ public class BudgetFragment extends Fragment {
         });
         rvBudgets.setAdapter(adapter);
         
+        // Click listener for "Add Budget" button
         btnAddBudget.setOnClickListener(v -> showAddBudgetDialog());
 
+        // Initial data fetch
         loadBudgets();
     }
 
+    /**
+     * Fetches budget data and expense data to calculate progress.
+     * 
+     * Logic:
+     * 1. Get all budgets and all expenses.
+     * 2. Aggregate expenses by category into a Map (Category -> Total Spent).
+     * 3. Merge budget info with spent info into `BudgetItem` objects.
+     * 4. Update the adapter to refresh the UI.
+     * 5. Toggle empty state visibility.
+     */
     private void loadBudgets() {
         List<DataManager.Budget> budgets = dataManager.getBudgets();
         List<DataManager.Expense> expenses = dataManager.getExpenses();
         
-        // Calculate spent amounts per category
+        // Step 1: Calculate spent amounts per category
+        // We use a HashMap for O(1) lookups during the merge step
         Map<String, Double> categoryTotals = new HashMap<>();
         for (DataManager.Expense expense : expenses) {
             double currentTotal = categoryTotals.getOrDefault(expense.category, 0.0);
             categoryTotals.put(expense.category, currentTotal + expense.amount);
         }
         
-        // Create budget items with spent amounts
+        // Step 2: Create display items merging Budget limit + Spent amount
         budgetItems.clear();
         for (DataManager.Budget budget : budgets) {
             double spent = categoryTotals.getOrDefault(budget.category, 0.0);
             budgetItems.add(new BudgetAdapter.BudgetItem(budget, spent));
         }
         
+        // Step 3: Update adapter
         adapter.updateBudgets(budgetItems);
         
-        // Show/hide empty state
+        // Step 4: Handle empty state UI
         if (budgets.isEmpty()) {
             rvBudgets.setVisibility(View.GONE);
             if (tvEmptyState != null) {
@@ -109,6 +154,17 @@ public class BudgetFragment extends Fragment {
         showBudgetDialog(budget);
     }
 
+    /**
+     * Shows a dialog to add or edit a budget.
+     * This method builds a complex custom dialog programmatically.
+     * 
+     * Key parts:
+     * - Grid layout for category selection
+     * - "Others" category handling with custom input
+     * - Input validation before saving
+     * 
+     * @param existingBudget The budget object if editing, or null if adding new.
+     */
     private void showBudgetDialog(DataManager.Budget existingBudget) {
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_budget, null);
         
@@ -138,13 +194,15 @@ public class BudgetFragment extends Fragment {
             etAmount.setText(String.format(Locale.getDefault(), "%.2f", existingBudget.limit));
         }
         
-        // Setup category grid
+        // Create category cards dynamically in a Grid
+        // We iterate through predefined categories and create a visual card for each
         for (int i = 0; i < categories.length; i++) {
             MaterialCardView card = new MaterialCardView(requireContext());
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            // width = 0 and columnSpec with weight 1f distributes columns equally
             params.width = 0;
             params.height = GridLayout.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(i % 3, 1f);
+            params.columnSpec = GridLayout.spec(i % 3, 1f); // 3 columns
             params.setMargins(8, 8, 8, 8);
             card.setLayoutParams(params);
             card.setRadius(24);
@@ -165,7 +223,7 @@ public class BudgetFragment extends Fragment {
             tvLabel.setPadding(8, 0, 8, 16);
             tvLabel.setTextColor(requireContext().getColor(android.R.color.darker_gray));
 
-            // Store reference to "Others" category label
+            // Store reference to "Others" category label to update it dynamically with custom text
             if (categories[i].equals("Others")) {
                 othersCategoryLabel[0] = tvLabel;
             }
@@ -177,14 +235,17 @@ public class BudgetFragment extends Fragment {
             card.addView(layout);
 
             final String category = categories[i];
+            // Set click listener for each category card
             card.setOnClickListener(v -> {
                 if (category.equals("Others")) {
+                    // Logic for "Others": allow custom text input
                     selectedCategory[0] = "Others";
                     // Show the custom category input field
                     tilCustomCategory.setVisibility(View.VISIBLE);
                     etCustomCategory.requestFocus();
                     updateCategorySelection(gridCategories, categories, selectedCategory[0], othersCategoryLabel[0], customCategoryName[0]);
                 } else {
+                    // Logic for standard categories
                     selectedCategory[0] = category;
                     customCategoryName[0] = ""; // Clear custom category when selecting a predefined one
                     // Hide the custom category input field
@@ -201,7 +262,8 @@ public class BudgetFragment extends Fragment {
             gridCategories.addView(card);
         }
         
-        // Check if existing budget is in the list
+        // Handle case where we are editing an existing budget
+        // We need to pre-select the correct category or setup the "Others" field if it's a custom category
         if (existingBudget != null) {
             boolean isPredefinedCategory = false;
             for (String cat : categories) {
@@ -211,11 +273,7 @@ public class BudgetFragment extends Fragment {
                 }
             }
             if (!isPredefinedCategory) {
-                // If the category was deleted or is somehow missing, treat it as custom via "Others" logic
-                // Or just add it momentarily to the end of the list? 
-                // For simplicity, we'll try to map it to "Others" logic if "Others" exists.
-                // But ideally budgets for deleted categories should probably be cleaned up or shown as legacy.
-                // Current implementation: Treat as Custom/Others
+                // If not in standard list, it must be valid custom category via "Others"
                 selectedCategory[0] = "Others";
                 customCategoryName[0] = existingBudget.category;
                 tilCustomCategory.setVisibility(View.VISIBLE);
@@ -226,6 +284,7 @@ public class BudgetFragment extends Fragment {
             }
         }
         
+        // Update visual state of selection
         updateCategorySelection(gridCategories, categories, selectedCategory[0], othersCategoryLabel[0], customCategoryName[0]);
 
         // Disable category selection if editing (category cannot be changed)
@@ -310,9 +369,20 @@ public class BudgetFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Updates the visual state of category cards to show selection.
+     * Highlights the selected card and resets others.
+     * 
+     * @param gridCategories The GridLayout containing cards
+     * @param categories Array of category names
+     * @param selected The currently selected category (can be "Others")
+     * @param othersLabel Reference to the TextView for "Others" to update text
+     * @param customName Custom name if "Others" is selected
+     */
     private void updateCategorySelection(GridLayout gridCategories, String[] categories, String selected, TextView othersLabel, String customName) {
         for (int i = 0; i < gridCategories.getChildCount(); i++) {
             MaterialCardView card = (MaterialCardView) gridCategories.getChildAt(i);
+            // Access hierarchy: Card -> LinearLayout -> TextView (Label is at index 1)
             TextView tvLabel = (TextView) ((android.widget.LinearLayout) card.getChildAt(0)).getChildAt(1);
             
             // Check if this is the "Others" category
@@ -342,6 +412,7 @@ public class BudgetFragment extends Fragment {
             int primaryColor = getMaterialColor("colorPrimary");
             int primaryContainerColor = getMaterialColor("colorPrimaryContainer");
             
+            // Apply selection style
             if (isSelected) {
                 card.setCardBackgroundColor(primaryContainerColor);
                 card.setStrokeWidth(4);
@@ -353,6 +424,10 @@ public class BudgetFragment extends Fragment {
         }
     }
 
+    /**
+     * Helper method to resolve theme colors attributes to integer color values.
+     * Useful for supporting both Light and Dark themes dynamically.
+     */
     private int getThemeColor(int attr) {
         TypedValue typedValue = new TypedValue();
         if (requireContext().getTheme().resolveAttribute(attr, typedValue, true)) {

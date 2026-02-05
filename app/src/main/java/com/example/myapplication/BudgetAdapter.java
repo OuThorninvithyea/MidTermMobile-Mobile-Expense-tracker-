@@ -13,10 +13,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * BudgetAdapter
+ * 
+ * RecyclerView Adapter for displaying a list of budgets.
+ * Each item shows:
+ * - Category icon and name
+ * - Spent amount vs Limit
+ * - Visual progress bar indicating percentage used
+ * - Color-coded warnings (Blue -> Orange -> Red)
+ */
 public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetViewHolder> {
     private List<BudgetItem> budgets;
     private OnBudgetClickListener listener;
 
+    /**
+     * Interface for handling click events on budget items.
+     * Implemented by the Fragment to handle actions.
+     */
     public interface OnBudgetClickListener {
         void onEditClick(DataManager.Budget budget);
         void onDeleteClick(DataManager.Budget budget);
@@ -30,6 +44,7 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
     @NonNull
     @Override
     public BudgetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Inflate the item layout (item_budget.xml)
         View view = LayoutInflater.from(parent.getContext())
             .inflate(R.layout.item_budget, parent, false);
         return new BudgetViewHolder(view);
@@ -46,11 +61,18 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
         return budgets.size();
     }
 
+    /**
+     * Updates the dataset and refreshes the RecyclerView.
+     * @param newBudgets New list of budget items
+     */
     public void updateBudgets(List<BudgetItem> newBudgets) {
         this.budgets = newBudgets;
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder class holding references to UI views for efficient recycling.
+     */
     class BudgetViewHolder extends RecyclerView.ViewHolder {
         private TextView tvCategory, tvCategoryIcon, tvSpent, tvLimit, tvWarning;
         private ProgressBar progressBar;
@@ -67,10 +89,18 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
             btnMenu = itemView.findViewById(R.id.btnMenuBudget);
         }
 
+        /**
+         * Binds data to the views.
+         * Contains logic for progress calculation and dynamic coloring.
+         * 
+         * @param budgetItem The data item to display
+         */
         public void bind(BudgetItem budgetItem) {
             DataManager.Budget budget = budgetItem.budget;
             double spent = budgetItem.spent;
             double limit = budget.limit;
+            
+            // Calculate percentage used (0 to 100+)
             double percentage = limit > 0 ? (spent / limit) * 100 : 0;
             
             tvCategory.setText(budget.category);
@@ -78,11 +108,14 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
             tvSpent.setText(String.format(Locale.getDefault(), "$%.2f", spent));
             tvLimit.setText(String.format(Locale.getDefault(), "/ $%.2f", limit));
             
-            // Set progress bar
+            // Set basic progress bar value (capped at 100 for visual bar)
             int progress = (int) Math.min(percentage, 100);
             progressBar.setProgress(progress);
             
-            // Set progress bar color based on percentage
+            // Dynamic Color Logic:
+            // - Over 100% -> Red (Critical)
+            // - Over 80% -> Orange (Warning)
+            // - Under 80% -> Blue (Normal)
             if (percentage >= 100) {
                 int redColor = ContextCompat.getColor(itemView.getContext(), android.R.color.holo_red_dark);
                 progressBar.getProgressDrawable().setColorFilter(
