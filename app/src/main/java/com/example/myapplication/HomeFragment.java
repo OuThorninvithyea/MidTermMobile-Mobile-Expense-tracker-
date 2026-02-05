@@ -41,15 +41,20 @@ import java.util.Locale;
  * 4. Handles clicks to edit or delete expenses.
  */
 public class HomeFragment extends Fragment {
-    private RecyclerView rvExpenses;
-    private TextView tvTotalAmount;
-    private ExpenseAdapter adapter;
-    private DataManager dataManager;
-    private TextInputEditText etSearch;
-    private MaterialButton btnSort;
-    private List<DataManager.Expense> allExpenses;
-    private String currentSortType = "date_desc"; // Default: newest first
-    private String searchQuery = "";
+    // UI Components
+    private RecyclerView rvExpenses;   // The list of expenses
+    private TextView tvTotalAmount;    // The card showing total summary
+    private TextInputEditText etSearch; // Search bar
+    private MaterialButton btnSort;    // Sort button
+    
+    // Data & Adapters
+    private ExpenseAdapter adapter;    // Custom adapter to bind data to RecyclerView
+    private DataManager dataManager;   // Access to database
+    
+    // State
+    private List<DataManager.Expense> allExpenses; // Source of truth for expenses
+    private String currentSortType = "date_desc"; // Default sorting: newest first
+    private String searchQuery = "";   // Current filter query
 
     @Nullable
     @Override
@@ -120,22 +125,28 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Loads, filters, sorts, and displays expenses.
-     * Also calculates and updates the total amount.
+     * Data Processing Pipeline:
+     * 1. Fetch raw data from Database (via DataManager).
+     * 2. Apply Filtering (Search query).
+     * 3. Apply Sorting (Date/Amount/Category).
+     * 4. Update UI (RecyclerView & Total Amount).
+     * 
+     * This method orchestrates the entire display logic.
      */
     private void loadExpenses() {
+        // Step 1: Fetch
         allExpenses = dataManager.getExpenses();
         
-        // Filter expenses based on search query
+        // Step 2: Filter
         List<DataManager.Expense> filteredExpenses = filterExpenses(allExpenses);
         
-        // Sort expenses based on current sort criteria
+        // Step 3: Sort
         List<DataManager.Expense> sortedExpenses = sortExpenses(filteredExpenses);
         
-        // Update adapter to refresh UI
+        // Step 4: Display
         adapter.updateExpenses(sortedExpenses);
 
-        // Calculate total amount from the currently displayed (filtered) list
+        // Calculate and display total from the *filtered* list
         double total = 0;
         for (DataManager.Expense expense : sortedExpenses) {
             total += expense.amount;
@@ -143,6 +154,13 @@ public class HomeFragment extends Fragment {
         tvTotalAmount.setText(String.format(Locale.getDefault(), "$%.2f", total));
     }
 
+    /**
+     * Filters expenses based on the search query.
+     * Matches against: Note, Category, Amount, or Date.
+     * 
+     * @param expenses The list to filter
+     * @return A new list containing only matching expenses
+     */
     private List<DataManager.Expense> filterExpenses(List<DataManager.Expense> expenses) {
         if (searchQuery.isEmpty()) {
             return new ArrayList<>(expenses);
@@ -150,7 +168,7 @@ public class HomeFragment extends Fragment {
 
         List<DataManager.Expense> filtered = new ArrayList<>();
         for (DataManager.Expense expense : expenses) {
-            // Search in note, category, amount, and date
+            // Check if any field contains the query substring
             if (expense.note != null && expense.note.toLowerCase().contains(searchQuery)) {
                 filtered.add(expense);
             } else if (expense.category != null && expense.category.toLowerCase().contains(searchQuery)) {
