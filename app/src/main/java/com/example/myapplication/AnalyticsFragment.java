@@ -52,6 +52,7 @@ public class AnalyticsFragment extends Fragment {
         btnSort = view.findViewById(R.id.btnSortAnalytics);
 
         // Setup search
+        // hello
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
