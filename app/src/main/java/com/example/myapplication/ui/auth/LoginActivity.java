@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.auth;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.AuthHandler;
+import com.example.myapplication.models.LoginResult;
+import com.example.myapplication.models.User;
+import com.example.myapplication.ui.main.MainActivity;
 
 /**
  * LoginActivity handles user authentication.
@@ -24,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etUsername, etPassword;
     private TextView tvError;
     private MaterialButton btnLogin;
-    private DataManager dataManager;
+    private AuthHandler authHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +42,12 @@ public class LoginActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_login);
 
-        // Initialize DataManager singleton
-        dataManager = DataManager.getInstance(this);
+        // Initialize AuthHandler
+        authHandler = new AuthHandler(this);
 
         // Check persistent login state using SharedPreferences info stored in DataManager
         // If a user is currently logged in, skip the login screen and go directly to the dashboard
-        if (dataManager.getCurrentUser() != null) {
+        if (authHandler.getCurrentUser() != null) {
             startActivity(new Intent(this, MainActivity.class));
             finish(); // Finish LoginActivity so user can't go back to it with 'Back' button
             return;
@@ -83,7 +88,7 @@ public class LoginActivity extends AppCompatActivity {
             .setTitle("Reset Database")
             .setMessage("This will delete ALL data including all users and expenses. This cannot be undone. Are you sure?")
             .setPositiveButton("Reset", (dialog, which) -> {
-                dataManager.resetDatabase();
+                authHandler.handleResetDatabase();
                 Toast.makeText(this, "Database reset. Please restart the app.", Toast.LENGTH_LONG).show();
                 finish();
             })
@@ -106,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // Attempt login via DataManager
-        DataManager.LoginResult result = dataManager.login(username, password);
+        LoginResult result = authHandler.handleLogin(username, password);
         if (result.success) {
             // Navigate to main app
             startActivity(new Intent(this, MainActivity.class));

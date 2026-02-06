@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.main;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -23,7 +23,13 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.ExpenseHandler;
+import com.example.myapplication.models.Expense;
+import com.example.myapplication.models.BudgetCheckResult;
+import com.example.myapplication.adapters.ExpenseAdapter;
 import java.util.ArrayList;
+
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -49,10 +55,10 @@ public class HomeFragment extends Fragment {
     
     // Data & Adapters
     private ExpenseAdapter adapter;    // Custom adapter to bind data to RecyclerView
-    private DataManager dataManager;   // Access to database
+    private ExpenseHandler expenseHandler;   // Access to expense logic
     
     // State
-    private List<DataManager.Expense> allExpenses; // Source of truth for expenses
+    private List<Expense> allExpenses; // Source of truth for expenses
     private String currentSortType = "date_desc"; // Default sorting: newest first
     private String searchQuery = "";   // Current filter query
 
@@ -67,7 +73,7 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize DataManager with context
-        dataManager = DataManager.getInstance(requireContext());
+        expenseHandler = new ExpenseHandler(requireContext());
         
         // Setup Views
         rvExpenses = view.findViewById(R.id.rvExpenses);
@@ -96,18 +102,18 @@ public class HomeFragment extends Fragment {
         // Initialize RecyclerView Adapter with empty list and click listeners
         adapter = new ExpenseAdapter(new ArrayList<>(), new ExpenseAdapter.OnExpenseClickListener() {
             @Override
-            public void onEditClick(DataManager.Expense expense) {
+            public void onEditClick(Expense expense) {
                 showEditDialog(expense);
             }
 
             @Override
-            public void onDeleteClick(DataManager.Expense expense) {
+            public void onDeleteClick(Expense expense) {
                 // Show confirmation before deletion
                 new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Expense")
                     .setMessage("Are you sure to delete it?")
                     .setPositiveButton("Delete", (dialog, which) -> {
-                        if (dataManager.deleteExpense(expense.id)) {
+                        if (expenseHandler.handleDeleteExpense(expense.id)) {
                             loadExpenses(); // Refresh list after delete
                             Toast.makeText(requireContext(), "Expense deleted", Toast.LENGTH_SHORT).show();
                         }
@@ -135,20 +141,20 @@ public class HomeFragment extends Fragment {
      */
     private void loadExpenses() {
         // Step 1: Fetch
-        allExpenses = dataManager.getExpenses();
+        allExpenses = expenseHandler.getExpenses();
         
         // Step 2: Filter
-        List<DataManager.Expense> filteredExpenses = filterExpenses(allExpenses);
+        List<Expense> filteredExpenses = filterExpenses(allExpenses);
         
         // Step 3: Sort
-        List<DataManager.Expense> sortedExpenses = sortExpenses(filteredExpenses);
+        List<Expense> sortedExpenses = sortExpenses(filteredExpenses);
         
         // Step 4: Display
         adapter.updateExpenses(sortedExpenses);
 
         // Calculate and display total from the *filtered* list
         double total = 0;
-        for (DataManager.Expense expense : sortedExpenses) {
+        for (Expense expense : sortedExpenses) {
             total += expense.amount;
         }
         tvTotalAmount.setText(String.format(Locale.getDefault(), "$%.2f", total));
@@ -161,13 +167,13 @@ public class HomeFragment extends Fragment {
      * @param expenses The list to filter
      * @return A new list containing only matching expenses
      */
-    private List<DataManager.Expense> filterExpenses(List<DataManager.Expense> expenses) {
+    private List<Expense> filterExpenses(List<Expense> expenses) {
         if (searchQuery.isEmpty()) {
             return new ArrayList<>(expenses);
         }
 
-        List<DataManager.Expense> filtered = new ArrayList<>();
-        for (DataManager.Expense expense : expenses) {
+        List<Expense> filtered = new ArrayList<>();
+        for (Expense expense : expenses) {
             // Check if any field contains the query substring
             if (expense.note != null && expense.note.toLowerCase().contains(searchQuery)) {
                 filtered.add(expense);
@@ -182,8 +188,8 @@ public class HomeFragment extends Fragment {
         return filtered;
     }
 
-    private List<DataManager.Expense> sortExpenses(List<DataManager.Expense> expenses) {
-        List<DataManager.Expense> sorted = new ArrayList<>(expenses);
+    private List<Expense> sortExpenses(List<Expense> expenses) {
+        List<Expense> sorted = new ArrayList<>(expenses);
         
         switch (currentSortType) {
             case "date_desc":
@@ -293,7 +299,7 @@ public class HomeFragment extends Fragment {
         loadExpenses();
     }
 
-    private void showEditDialog(DataManager.Expense expense) {
+    private void showEditDialog(Expense expense) {
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_expense, null);
         
         TextInputEditText etAmount = dialogView.findViewById(R.id.etAmount);
@@ -376,13 +382,13 @@ public class HomeFragment extends Fragment {
 
                     // Check budget before updating (only if category changed or amount changed)
                     if (!selectedCategory[0].equals(expense.category) || amount != expense.amount) {
-                        DataManager.BudgetCheckResult budgetCheck;
+                        BudgetCheckResult budgetCheck;
                         if (!selectedCategory[0].equals(expense.category)) {
                             // Category changed, check new category budget
-                            budgetCheck = dataManager.checkBudget(selectedCategory[0], amount);
+                            budgetCheck = expenseHandler.checkBudget(selectedCategory[0], amount);
                         } else {
                             // Same category, check with expense ID to exclude it from calculation
-                            budgetCheck = dataManager.checkBudgetOnUpdate(selectedCategory[0], amount, expense.id);
+                            budgetCheck = expenseHandler.checkBudgetOnUpdate(selectedCategory[0], amount, expense.id);
                         }
                         
                         if (budgetCheck.exceedsBudget) {
@@ -391,7 +397,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    if (dataManager.updateExpense(expense.id, selectedCategory[0], amount, 
+                    if (expenseHandler.handleUpdateExpense(expense.id, selectedCategory[0], amount, 
                             note.isEmpty() ? "No note" : note, date.isEmpty() ? "Today" : date, expense.imageUri)) {
                         loadExpenses();
                         Toast.makeText(requireContext(), "Expense updated", Toast.LENGTH_SHORT).show();
@@ -442,7 +448,7 @@ public class HomeFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void showBudgetExceededAlert(String category, DataManager.BudgetCheckResult budgetCheck, double amount, DataManager.Expense expense, String note, String date) {
+    private void showBudgetExceededAlert(String category, BudgetCheckResult budgetCheck, double amount, Expense expense, String note, String date) {
         String message = String.format(Locale.getDefault(),
             "Budget Limit Reached!\n\n" +
             "Category: %s\n" +
@@ -463,7 +469,7 @@ public class HomeFragment extends Fragment {
             .setMessage(message)
             .setPositiveButton("Update Anyway", (dialog, which) -> {
                 // User chose to update despite exceeding budget
-                if (dataManager.updateExpense(expense.id, category, amount, 
+                if (expenseHandler.handleUpdateExpense(expense.id, category, amount, 
                         note.isEmpty() ? "No note" : note, date.isEmpty() ? "Today" : date, expense.imageUri)) {
                     loadExpenses();
                     Toast.makeText(requireContext(), "Expense updated", Toast.LENGTH_SHORT).show();

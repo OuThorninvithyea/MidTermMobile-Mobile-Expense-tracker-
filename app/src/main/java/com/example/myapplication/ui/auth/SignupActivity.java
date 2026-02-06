@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.auth;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,12 +9,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.AuthHandler;
+import com.example.myapplication.models.SignupResult;
+import com.example.myapplication.ui.main.MainActivity;
 
 public class SignupActivity extends AppCompatActivity {
     private TextInputEditText etUsername, etPassword, etPet;
     private TextView tvError;
     private MaterialButton btnSignup;
-    private DataManager dataManager;
+    private AuthHandler authHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +31,7 @@ public class SignupActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_signup);
 
-        dataManager = DataManager.getInstance(this);
+        authHandler = new AuthHandler(this);
 
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
@@ -52,7 +56,8 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        DataManager.SignupResult result = dataManager.signup(username, password, pet);
+        SignupResult result = authHandler.handleSignup(username, password, pet);
+
         if (result.success) {
             startActivity(new Intent(this, MainActivity.class));
             finish();

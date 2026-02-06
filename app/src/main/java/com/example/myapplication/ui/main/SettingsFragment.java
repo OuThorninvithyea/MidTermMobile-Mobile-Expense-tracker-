@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.main;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,13 +20,20 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.data.DataManager;
+import com.example.myapplication.models.User;
+import com.example.myapplication.ui.auth.LoginActivity;
+import com.example.myapplication.handlers.AuthHandler;
+import com.example.myapplication.handlers.ExpenseHandler; 
 
 public class SettingsFragment extends Fragment {
     private TextView tvUsername, tvUserInitial;
     private MaterialButton btnLogout;
     private View btnClearData, btnEditProfile;
     private SwitchMaterial switchDarkMode;
-    private DataManager dataManager;
+    private AuthHandler authHandler;
+    private ExpenseHandler expenseHandler;
     private SharedPreferences prefs;
     private static final String PREFS_NAME = "AppSettings";
     private static final String KEY_DARK_MODE = "dark_mode";
@@ -44,7 +51,8 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        dataManager = DataManager.getInstance(requireContext());
+        authHandler = new AuthHandler(requireContext());
+        expenseHandler = new ExpenseHandler(requireContext());
         prefs = requireContext().getSharedPreferences(PREFS_NAME, 0);
         
         tvUsername = view.findViewById(R.id.tvUsername);
@@ -62,14 +70,14 @@ public class SettingsFragment extends Fragment {
              switchDarkMode.setChecked(!switchDarkMode.isChecked());
         });
 
-        DatabaseHelper.User user = dataManager.getCurrentUser();
+        User user = authHandler.getCurrentUser();
         if (user != null) {
             tvUsername.setText("@" + user.username);
             tvUserInitial.setText(user.username.substring(0, 1).toUpperCase());
         }
 
         btnLogout.setOnClickListener(v -> {
-            dataManager.logout();
+            authHandler.handleLogout();
             startActivity(new Intent(requireContext(), LoginActivity.class));
             requireActivity().finish();
         });
@@ -83,7 +91,7 @@ public class SettingsFragment extends Fragment {
                 .setTitle("Clear Data")
                 .setMessage("Clear all expenses? This cannot be undone.")
                 .setPositiveButton("Clear", (dialog, which) -> {
-                    if (dataManager.clearExpenses()) {
+                    if (expenseHandler.handleClearExpenses()) {
                         Toast.makeText(requireContext(), "All expenses cleared", Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -127,7 +135,7 @@ public class SettingsFragment extends Fragment {
     }
     
     private void showEditProfileDialog() {
-        DatabaseHelper.User user = dataManager.getCurrentUser();
+        User user = authHandler.getCurrentUser();
         if (user == null) {
             Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show();
             return;
@@ -183,7 +191,7 @@ public class SettingsFragment extends Fragment {
 
             // Update username if changed
             if (usernameChanged) {
-                if (!dataManager.updateUsername(newUsername)) {
+                if (!authHandler.handleUpdateUsername(newUsername)) {
                     tvError.setText("Username already exists or update failed");
                     tvError.setVisibility(View.VISIBLE);
                     return;
@@ -196,7 +204,7 @@ public class SettingsFragment extends Fragment {
 
             // Update password if changed
             if (passwordChanged) {
-                if (!dataManager.updatePassword(currentPassword, newPassword)) {
+                if (!authHandler.handleUpdatePassword(currentPassword, newPassword)) {
                     tvError.setText("Current password is incorrect or update failed");
                     tvError.setVisibility(View.VISIBLE);
                     return;
@@ -231,7 +239,7 @@ public class SettingsFragment extends Fragment {
         loadDarkModeState();
         
         // Refresh user info in case it was updated
-        DatabaseHelper.User user = dataManager.getCurrentUser();
+        User user = authHandler.getCurrentUser();
         if (user != null) {
             tvUsername.setText("@" + user.username);
             tvUserInitial.setText(user.username.substring(0, 1).toUpperCase());

@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.adapters;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -10,19 +10,21 @@ import android.widget.TextView;
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.myapplication.R;
+import com.example.myapplication.models.Expense;
 import java.util.List;
 import java.util.Locale;
 
 public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder> {
-    private List<DataManager.Expense> expenses;
+    private List<Expense> expenses;
     private OnExpenseClickListener listener;
 
     public interface OnExpenseClickListener {
-        void onEditClick(DataManager.Expense expense);
-        void onDeleteClick(DataManager.Expense expense);
+        void onEditClick(Expense expense);
+        void onDeleteClick(Expense expense);
     }
 
-    public ExpenseAdapter(List<DataManager.Expense> expenses, OnExpenseClickListener listener) {
+    public ExpenseAdapter(List<Expense> expenses, OnExpenseClickListener listener) {
         this.expenses = expenses;
         this.listener = listener;
     }
@@ -37,7 +39,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     @Override
     public void onBindViewHolder(@NonNull ExpenseViewHolder holder, int position) {
-        DataManager.Expense expense = expenses.get(position);
+        Expense expense = expenses.get(position);
         holder.bind(expense);
     }
 
@@ -46,7 +48,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         return expenses.size();
     }
 
-    public void updateExpenses(List<DataManager.Expense> newExpenses) {
+    public void updateExpenses(List<Expense> newExpenses) {
         this.expenses = newExpenses;
         notifyDataSetChanged();
     }
@@ -68,7 +70,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
             btnMenu = itemView.findViewById(R.id.btnMenu);
         }
 
-        public void bind(DataManager.Expense expense) {
+        public void bind(Expense expense) {
             tvCategory.setText(expense.category);
             tvNote.setText(expense.note);
             tvAmount.setText(String.format(Locale.getDefault(), "-$%.2f", expense.amount));

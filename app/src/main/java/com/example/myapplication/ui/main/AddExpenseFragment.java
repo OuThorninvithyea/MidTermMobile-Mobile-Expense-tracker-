@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.main;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -21,6 +21,9 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.ExpenseHandler;
+import com.example.myapplication.models.BudgetCheckResult;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,7 +46,7 @@ public class AddExpenseFragment extends Fragment {
     private String selectedCategory = "Food";
     private String customCategoryName = ""; // Store custom category name
     private TextView othersCategoryLabel; // Reference to "Others" category label
-    private DataManager dataManager;
+    private ExpenseHandler expenseHandler;
     private List<String> categoryList = new ArrayList<>();
     private final Map<String, String> iconMap = new HashMap<>();
 
@@ -75,7 +78,7 @@ public class AddExpenseFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        dataManager = DataManager.getInstance(requireContext());
+        expenseHandler = new ExpenseHandler(requireContext());
         etAmount = view.findViewById(R.id.etAmount);
         etNote = view.findViewById(R.id.etNote);
         etDate = view.findViewById(R.id.etDate);
@@ -123,7 +126,7 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void loadCategories() {
-        categoryList = dataManager.getCategories();
+        categoryList = expenseHandler.getCategories();
         // Ensure selectedCategory is valid
         if (!categoryList.contains(selectedCategory)) {
             if (!categoryList.isEmpty()) {
@@ -254,7 +257,7 @@ public class AddExpenseFragment extends Fragment {
             .setPositiveButton("Add", (dialog, which) -> {
                 String name = etName.getText().toString().trim();
                 if (!name.isEmpty()) {
-                    if (dataManager.addCategory(name)) {
+                    if (expenseHandler.handleAddCategory(name)) {
                         Toast.makeText(requireContext(), "Category added", Toast.LENGTH_SHORT).show();
                         loadCategories(); // Refresh grid
                         // Select the new category
@@ -386,7 +389,7 @@ public class AddExpenseFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void showBudgetExceededAlert(String category, DataManager.BudgetCheckResult budgetCheck, double amount, String note, String date) {
+    private void showBudgetExceededAlert(String category, BudgetCheckResult budgetCheck, double amount, String note, String date) {
         String message = String.format(Locale.getDefault(),
             "Budget Limit Reached!\n\n" +
             "Category: %s\n" +
@@ -414,7 +417,7 @@ public class AddExpenseFragment extends Fragment {
     }
     
     private void performSave(String category, double amount, String note, String date) {
-        long id = dataManager.addExpense(category, amount, note.isEmpty() ? "No note" : note, date.isEmpty() ? "Today" : date, selectedImageUri != null ? selectedImageUri.toString() : null);
+        long id = expenseHandler.handleAddExpense(category, amount, note.isEmpty() ? "No note" : note, date.isEmpty() ? "Today" : date, selectedImageUri != null ? selectedImageUri.toString() : null);
         if (id > 0) {
             Toast.makeText(requireContext(), "Expense saved", Toast.LENGTH_SHORT).show();
             etAmount.setText("");
@@ -447,7 +450,7 @@ public class AddExpenseFragment extends Fragment {
             .setTitle("Delete Category")
             .setMessage("Are you sure you want to delete '" + category + "'?")
             .setPositiveButton("Delete", (dialog, which) -> {
-                if (dataManager.deleteCategory(category)) {
+                if (expenseHandler.handleDeleteCategory(category)) {
                     Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
                     loadCategories(); // This will also reset selectedCategory if needed
                 } else {
@@ -483,7 +486,7 @@ public class AddExpenseFragment extends Fragment {
 
             String categoryToSave = selectedCategory.equals("Others") ? customCategoryName : selectedCategory;
             
-            DataManager.BudgetCheckResult budgetCheck = dataManager.checkBudget(categoryToSave, amount);
+            BudgetCheckResult budgetCheck = expenseHandler.checkBudget(categoryToSave, amount);
             if (budgetCheck.exceedsBudget) {
                 showBudgetExceededAlert(categoryToSave, budgetCheck, amount, note, date);
                 return;

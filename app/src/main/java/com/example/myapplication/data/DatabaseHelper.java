@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.data;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,9 +7,10 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
+import com.example.myapplication.models.User;
 
 /**
  * DatabaseHelper manages the SQLite database creation and version management.
@@ -20,6 +21,8 @@ import java.security.NoSuchAlgorithmException;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "expense_tracker.db";
+    // ... (rest of class) ...
+
     private static final int DATABASE_VERSION = 5; // Incremented to add image URI
 
     // Users table
@@ -800,13 +803,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public static class User {
-        public int id;
-        public String username;
 
-        public User(int id, String username) {
-            this.id = id;
-            this.username = username;
-        }
-    }
 }

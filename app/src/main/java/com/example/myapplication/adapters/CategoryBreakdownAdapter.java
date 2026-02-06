@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.myapplication.R;
 import java.util.List;
 import java.util.Locale;
 
@@ -75,11 +76,11 @@ public class CategoryBreakdownAdapter extends RecyclerView.Adapter<CategoryBreak
     }
 
     public static class CategoryBreakdown {
-        String category;
-        double amount;
-        double percentage;
+        public String category;
+        public double amount;
+        public double percentage;
 
-        CategoryBreakdown(String category, double amount, double percentage) {
+        public CategoryBreakdown(String category, double amount, double percentage) {
             this.category = category;
             this.amount = amount;
             this.percentage = percentage;

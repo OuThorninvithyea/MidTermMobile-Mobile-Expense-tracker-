@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.main;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,6 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.ExpenseHandler;
+import com.example.myapplication.models.Expense;
+import com.example.myapplication.adapters.CategoryBreakdownAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +45,7 @@ public class AnalyticsFragment extends Fragment {
     private TextView tvTotalExpenses, tvTransactionCount;
     private TextInputEditText etSearch;
     private MaterialButton btnSort;
-    private DataManager dataManager;
+    private ExpenseHandler expenseHandler;
     private CategoryBreakdownAdapter adapter;
     private List<CategoryBreakdownAdapter.CategoryBreakdown> allBreakdowns;
     private String currentSortType = "amount_desc"; // Default: highest amount first
@@ -66,7 +70,7 @@ public class AnalyticsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize DataManager to access database
-        dataManager = DataManager.getInstance(requireContext());
+        expenseHandler = new ExpenseHandler(requireContext());
         
         // Bind UI components
         rvCategoryBreakdown = view.findViewById(R.id.rvCategoryBreakdown);
@@ -111,14 +115,15 @@ public class AnalyticsFragment extends Fragment {
      */
     private void loadAnalytics() {
         // Step 1: Fetch raw data
-        List<DataManager.Expense> expenses = dataManager.getExpenses();
+        List<Expense> expenses = expenseHandler.getExpenses();
+
         
         // Step 2: Aggregate data
         double total = 0;
         Map<String, Double> categoryTotals = new HashMap<>();
         
         // Loop through all expenses to sum up amount and group by category
-        for (DataManager.Expense expense : expenses) {
+        for (Expense expense : expenses) {
             total += expense.amount;
             // Add amount to existing category total or initialize if new category
             categoryTotals.put(expense.category, 

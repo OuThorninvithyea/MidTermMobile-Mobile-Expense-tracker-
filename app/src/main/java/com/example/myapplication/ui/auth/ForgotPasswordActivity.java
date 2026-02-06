@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.auth;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.AuthHandler;
 
 /**
  * ForgotPasswordActivity
@@ -27,7 +29,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private MaterialButton btnReset;
     
     // Database access
-    private DataManager dataManager;
+    private AuthHandler authHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_forgot_password);
 
-        dataManager = DataManager.getInstance(this);
+        authHandler = new AuthHandler(this);
 
         // Bind UI elements
         etUsername = findViewById(R.id.etUsername);
@@ -72,7 +74,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         }
 
         // Delegate logic to DataManager -> DatabaseHelper
-        boolean success = dataManager.resetPassword(username, pet, newPassword);
+        boolean success = authHandler.handleResetPassword(username, pet, newPassword);
         if (success) {
             Toast.makeText(this, "Password reset successful. Please log in.", Toast.LENGTH_LONG).show();
             finish(); // Close activity on success
@@ -85,4 +87,6 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         tvError.setText(message);
         tvError.setVisibility(View.VISIBLE);
     }
+
+    
 }

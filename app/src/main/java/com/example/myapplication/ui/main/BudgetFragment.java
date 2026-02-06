@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.main;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -18,6 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.R;
+import com.example.myapplication.handlers.BudgetHandler;
+import com.example.myapplication.handlers.ExpenseHandler;
+import com.example.myapplication.models.Budget;
+import com.example.myapplication.models.Expense;
+import com.example.myapplication.adapters.BudgetAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +49,8 @@ public class BudgetFragment extends Fragment {
     private TextView tvEmptyState; // Text shown when no budgets exist
     
     // Data & Logic
-    private DataManager dataManager; // Repository for accessing database
+    private BudgetHandler budgetHandler;
+    private ExpenseHandler expenseHandler;
     private BudgetAdapter adapter; // Adapter to bind data to RecyclerView
     private List<BudgetAdapter.BudgetItem> budgetItems; // List of data objects to display
 
@@ -66,7 +73,8 @@ public class BudgetFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Get singleton instance of DataManager
-        dataManager = DataManager.getInstance(requireContext());
+        budgetHandler = new BudgetHandler(requireContext());
+        expenseHandler = new ExpenseHandler(requireContext());
         
         // Initialize UI components
         rvBudgets = view.findViewById(R.id.rvBudgets);
@@ -82,12 +90,12 @@ public class BudgetFragment extends Fragment {
         adapter = new BudgetAdapter(budgetItems, new BudgetAdapter.OnBudgetClickListener() {
             // Implement interface callbacks for item interactions
             @Override
-            public void onEditClick(DataManager.Budget budget) {
+            public void onEditClick(Budget budget) {
                 showEditBudgetDialog(budget);
             }
 
             @Override
-            public void onDeleteClick(DataManager.Budget budget) {
+            public void onDeleteClick(Budget budget) {
                 showDeleteConfirmation(budget);
             }
         });
@@ -111,20 +119,20 @@ public class BudgetFragment extends Fragment {
      * 5. Toggle empty state visibility.
      */
     private void loadBudgets() {
-        List<DataManager.Budget> budgets = dataManager.getBudgets();
-        List<DataManager.Expense> expenses = dataManager.getExpenses();
+        List<Budget> budgets = budgetHandler.getBudgets();
+        List<Expense> expenses = expenseHandler.getExpenses();
         
         // Step 1: Calculate spent amounts per category
         // We use a HashMap for O(1) lookups during the merge step
         Map<String, Double> categoryTotals = new HashMap<>();
-        for (DataManager.Expense expense : expenses) {
+        for (Expense expense : expenses) {
             double currentTotal = categoryTotals.getOrDefault(expense.category, 0.0);
             categoryTotals.put(expense.category, currentTotal + expense.amount);
         }
         
         // Step 2: Create display items merging Budget limit + Spent amount
         budgetItems.clear();
-        for (DataManager.Budget budget : budgets) {
+        for (Budget budget : budgets) {
             double spent = categoryTotals.getOrDefault(budget.category, 0.0);
             budgetItems.add(new BudgetAdapter.BudgetItem(budget, spent));
         }
@@ -150,7 +158,7 @@ public class BudgetFragment extends Fragment {
         showBudgetDialog(null);
     }
 
-    private void showEditBudgetDialog(DataManager.Budget budget) {
+    private void showEditBudgetDialog(Budget budget) {
         showBudgetDialog(budget);
     }
 
@@ -165,7 +173,7 @@ public class BudgetFragment extends Fragment {
      * 
      * @param existingBudget The budget object if editing, or null if adding new.
      */
-    private void showBudgetDialog(DataManager.Budget existingBudget) {
+    private void showBudgetDialog(Budget existingBudget) {
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_budget, null);
         
         TextInputEditText etAmount = dialogView.findViewById(R.id.etBudgetAmount);
@@ -173,7 +181,7 @@ public class BudgetFragment extends Fragment {
         com.google.android.material.textfield.TextInputLayout tilCustomCategory = dialogView.findViewById(R.id.tilCustomCategoryBudget);
         GridLayout gridCategories = dialogView.findViewById(R.id.gridBudgetCategories);
         
-        List<String> categoryList = dataManager.getCategories();
+        List<String> categoryList = expenseHandler.getCategories();
         String[] categories = categoryList.toArray(new String[0]);
         
         // Setup icon map with defaults
@@ -351,7 +359,7 @@ public class BudgetFragment extends Fragment {
                     // Use custom category name if "Others" is selected, otherwise use selected category
                     String categoryToSave = selectedCategory[0].equals("Others") ? customCategoryName[0] : selectedCategory[0];
                     
-                    if (dataManager.setBudget(categoryToSave, amount)) {
+                    if (budgetHandler.handleSetBudget(categoryToSave, amount)) {
                         loadBudgets();
                         String message = existingBudget != null ? "Budget updated successfully" : "Budget set successfully";
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
@@ -468,12 +476,12 @@ public class BudgetFragment extends Fragment {
         }
     }
 
-    private void showDeleteConfirmation(DataManager.Budget budget) {
+    private void showDeleteConfirmation(Budget budget) {
         new AlertDialog.Builder(requireContext())
             .setTitle("Delete Budget")
             .setMessage("Are you sure you want to delete the budget for " + budget.category + "?")
             .setPositiveButton("Delete", (dialog, which) -> {
-                if (dataManager.deleteBudget(budget.category)) {
+                if (budgetHandler.handleDeleteBudget(budget.category)) {
                     loadBudgets();
                     Toast.makeText(requireContext(), "Budget deleted", Toast.LENGTH_SHORT).show();
                 } else {

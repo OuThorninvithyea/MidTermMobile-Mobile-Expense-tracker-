@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.adapters;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.myapplication.R;
+import com.example.myapplication.models.Budget;
 import java.util.List;
 import java.util.Locale;
 
@@ -17,11 +19,14 @@ import java.util.Locale;
  * BudgetAdapter
  * 
  * RecyclerView Adapter for displaying a list of budgets.
- * Each item shows:
- * - Category icon and name
- * - Spent amount vs Limit
- * - Visual progress bar indicating percentage used
- * - Color-coded warnings (Blue -> Orange -> Red)
+ * 
+ * Features:
+ * - Displays Category name and dynamic icon
+ * - Visual ProgressBar showing spent vs limit
+ * - Dynamic color coding based on percentage used:
+ *   - < 80% : Blue (Safe)
+ *   - >= 80% : Orange (Warning)
+ *   - >= 100% : Red (Over budget)
  */
 public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetViewHolder> {
     private List<BudgetItem> budgets;
@@ -32,8 +37,8 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
      * Implemented by the Fragment to handle actions.
      */
     public interface OnBudgetClickListener {
-        void onEditClick(DataManager.Budget budget);
-        void onDeleteClick(DataManager.Budget budget);
+        void onEditClick(Budget budget);
+        void onDeleteClick(Budget budget);
     }
 
     public BudgetAdapter(List<BudgetItem> budgets, OnBudgetClickListener listener) {
@@ -96,7 +101,7 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
          * @param budgetItem The data item to display
          */
         public void bind(BudgetItem budgetItem) {
-            DataManager.Budget budget = budgetItem.budget;
+            Budget budget = budgetItem.budget;
             double spent = budgetItem.spent;
             double limit = budget.limit;
             
@@ -181,10 +186,10 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
     }
 
     public static class BudgetItem {
-        public DataManager.Budget budget;
+        public Budget budget;
         public double spent;
 
-        public BudgetItem(DataManager.Budget budget, double spent) {
+        public BudgetItem(Budget budget, double spent) {
             this.budget = budget;
             this.spent = spent;
         }
