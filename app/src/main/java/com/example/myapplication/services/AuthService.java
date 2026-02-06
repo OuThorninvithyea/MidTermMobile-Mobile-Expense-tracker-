@@ -1,7 +1,7 @@
 package com.example.myapplication.services;
 
 import android.content.Context;
-import com.example.myapplication.data.DataManager;
+import com.example.myapplication.data.repositories.AuthRepository;
 import com.example.myapplication.models.LoginResult;
 import com.example.myapplication.models.SignupResult;
 import com.example.myapplication.models.User;
@@ -10,17 +10,17 @@ import com.example.myapplication.models.User;
  * AuthService
  * 
  * Service layer for Authentication.
- * Handles business logic such as input validation before interacting with the Repository (DataManager).
+ * Handles business logic such as input validation before interacting with the Repository.
  */
 public class AuthService {
-    private DataManager dataManager;
+    private AuthRepository authRepository;
 
     public AuthService(Context context) {
-        this.dataManager = DataManager.getInstance(context);
+        this.authRepository = new AuthRepository(context);
     }
 
     public LoginResult login(String username, String password) {
-        return dataManager.login(username, password);
+        return authRepository.login(username, password);
     }
 
     /**
@@ -32,7 +32,6 @@ public class AuthService {
      * @return SignupResult containing success status or error message
      */
     public SignupResult signup(String username, String password, String pet) {
-        // Validation logic moved from DataManager (Business Logic)
         if (username == null || username.trim().isEmpty()) {
             return new SignupResult(false, null, "Username is required");
         }
@@ -42,30 +41,38 @@ public class AuthService {
         if (pet == null || pet.trim().isEmpty()) {
             return new SignupResult(false, null, "Security answer is required");
         }
-        return dataManager.signup(username, password, pet);
+        return authRepository.signup(username, password, pet);
     }
 
     public boolean resetPassword(String username, String pet, String newPassword) {
-        return dataManager.resetPassword(username, pet, newPassword);
+        return authRepository.resetPassword(username, pet, newPassword);
     }
 
     public User getCurrentUser() {
-        return dataManager.getCurrentUser();
+        return authRepository.getCurrentUser();
     }
 
     public void logout() {
-        dataManager.logout();
+        authRepository.logout();
     }
     
     public boolean updateUsername(String newUsername) {
-        return dataManager.updateUsername(newUsername);
+        User currentUser = authRepository.getCurrentUser();
+        if (currentUser != null) {
+            return authRepository.updateUsername(currentUser.id, newUsername);
+        }
+        return false;
     }
     
     public boolean updatePassword(String currentPassword, String newPassword) {
-        return dataManager.updatePassword(currentPassword, newPassword);
+        User currentUser = authRepository.getCurrentUser();
+        if (currentUser != null) {
+            return authRepository.updatePassword(currentUser.id, currentPassword, newPassword);
+        }
+        return false;
     }
 
     public void resetDatabase() {
-        dataManager.resetDatabase();
+        authRepository.resetDatabase();
     }
 }

@@ -21,7 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.example.myapplication.R;
-import com.example.myapplication.data.DataManager;
+
 import com.example.myapplication.models.User;
 import com.example.myapplication.ui.auth.LoginActivity;
 import com.example.myapplication.handlers.AuthHandler;
